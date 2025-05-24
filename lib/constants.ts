@@ -1,1 +1,2 @@
-export const DEFAULT_MODEL = "xai/grok-3-beta";
+export const DEFAULT_MODEL = "openai/gpt-4o-mini";
+

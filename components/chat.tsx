@@ -7,13 +7,15 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { SendIcon } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { DEFAULT_MODEL } from "@/lib/constants";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { AlertCircle } from "lucide-react";
 import { defaultChatStore } from "ai";
 import { cn } from "@/lib/utils";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
+import { useAvailableModels } from "@/lib/hooks/use-available-models";
+import type { DisplayModel } from "@/lib/display-model";
 
 function ModelSelectorHandler({
   modelId,
@@ -36,6 +38,20 @@ function ModelSelectorHandler({
 
 export function Chat({ modelId = DEFAULT_MODEL }: { modelId: string }) {
   const [currentModelId, setCurrentModelId] = useState(modelId);
+  const { models } = useAvailableModels();
+  const [modelWarning, setModelWarning] = useState<string | null>(null);
+
+  // Check if the selected model is available
+  useEffect(() => {
+    if (!models) return;
+
+    const selectedModel = models.find(model => model.id === currentModelId);
+    if (selectedModel && selectedModel.isAvailable === false) {
+      setModelWarning(`${selectedModel.label} is currently unavailable. Your messages will be processed with the default model.`);
+    } else {
+      setModelWarning(null);
+    }
+  }, [currentModelId, models]);
 
   const handleModelIdChange = (newModelId: string) => {
     setCurrentModelId(newModelId);
@@ -74,22 +90,33 @@ export function Chat({ modelId = DEFAULT_MODEL }: { modelId: string }) {
         ))}
       </div>
 
-      {error && (
-        <div className="px-8 pb-4">
-          <Alert variant="destructive">
-            <AlertCircle className="h-4 w-4" />
-            <AlertDescription>
-              An error occurred while generating the response.
-            </AlertDescription>
-            <Button
-              variant="outline"
-              size="sm"
-              className="ml-auto"
-              onClick={() => reload()}
-            >
-              Retry
-            </Button>
-          </Alert>
+      {(error || modelWarning) && (
+        <div className="px-8 pb-4 space-y-3">
+          {error && (
+            <Alert variant="destructive">
+              <AlertCircle className="h-4 w-4" />
+              <AlertDescription>
+                An error occurred while generating the response.
+              </AlertDescription>
+              <Button
+                variant="outline"
+                size="sm"
+                className="ml-auto"
+                onClick={() => reload()}
+              >
+                Retry
+              </Button>
+            </Alert>
+          )}
+
+          {modelWarning && (
+            <Alert variant="warning" className="bg-yellow-500/20 text-foreground border-yellow-600">
+              <AlertCircle className="h-4 w-4 text-yellow-600" />
+              <AlertDescription className="text-sm">
+                {modelWarning}
+              </AlertDescription>
+            </Alert>
+          )}
         </div>
       )}
 
