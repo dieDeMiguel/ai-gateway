@@ -56,7 +56,7 @@ const MODEL_PERFORMANCE = new Map<string, number>([
   ["meta/llama-3-70b", 31.9],
 ]);
 
-function buildModelList(models: (GatewayLanguageModelEntry & { available?: boolean, tokensPerSecond?: number })[]) {
+function buildModelList(models: (GatewayLanguageModelEntry & { available?: boolean, tokensPerSecond?: number, rank?: number })[]) {
   return models.map((model) => {
     // Extract availability from the API response if available
     const isAvailable = model.available !== false;
@@ -73,6 +73,7 @@ function buildModelList(models: (GatewayLanguageModelEntry & { available?: boole
       label: model.name,
       isAvailable,
       tokensPerSecond,
+      rank: model.rank // Include the rank information
     };
   });
 }

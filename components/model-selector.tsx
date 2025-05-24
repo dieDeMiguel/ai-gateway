@@ -38,7 +38,7 @@ export const ModelSelector = memo(function ModelSelector({
       onValueChange={onModelChange}
       disabled={isLoading || !!error || !models?.length}
     >
-      <SelectTrigger className="w-[220px]">
+      <SelectTrigger className="w-[280px]">
         {isLoading ? (
           <div className="flex items-center gap-2">
             <Loader2 className="h-4 w-4 animate-spin" />
@@ -53,7 +53,7 @@ export const ModelSelector = memo(function ModelSelector({
         )}
       </SelectTrigger>
 
-      <SelectContent>
+      <SelectContent className="min-w-[320px]">
         <SelectGroup>
           <SelectLabel>Models</SelectLabel>
           {models?.map((model) => (
@@ -69,7 +69,14 @@ export const ModelSelector = memo(function ModelSelector({
                         )} 
                         aria-label={model.isAvailable === false ? "Unavailable" : "Available"}
                       />
-                      <span className="truncate">{model.label}</span>
+                      <div className="flex items-center gap-1 min-w-[140px]">
+                        {model.rank && (
+                          <span className="text-xs text-muted-foreground bg-muted px-1 rounded">
+                            #{model.rank}
+                          </span>
+                        )}
+                        <span className="truncate">{model.label}</span>
+                      </div>
                       {model.tokensPerSecond && (
                         <span className="text-xs text-muted-foreground ml-auto flex-shrink-0">
                           {model.tokensPerSecond.toFixed(1)} tok/s
@@ -77,9 +84,16 @@ export const ModelSelector = memo(function ModelSelector({
                       )}
                     </div>
                   </TooltipTrigger>
-                  <TooltipContent side="right" className="max-w-[280px]">
+                  <TooltipContent side="right" className="max-w-[320px]">
                     <div className="space-y-1">
-                      <p className="font-medium">{model.label}</p>
+                      <div className="flex items-center justify-between">
+                        <p className="font-medium">{model.label}</p>
+                        {model.rank && (
+                          <span className="ml-2 px-1.5 py-0.5 text-xs bg-primary/10 text-primary rounded">
+                            Rank #{model.rank}
+                          </span>
+                        )}
+                      </div>
                       <p className="text-sm">Provider: {model.id.split('/')[0]}</p>
                       <p className="text-sm">Status: {model.isAvailable === false ? "Unavailable" : "Available"}</p>
                       {model.tokensPerSecond && (

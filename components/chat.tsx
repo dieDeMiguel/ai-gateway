@@ -9,13 +9,14 @@ import { Input } from "@/components/ui/input";
 import { SendIcon } from "lucide-react";
 import { useState, useEffect } from "react";
 import { DEFAULT_MODEL } from "@/lib/constants";
-import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { AlertCircle } from "lucide-react";
 import { defaultChatStore } from "ai";
 import { cn } from "@/lib/utils";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
 import { useAvailableModels } from "@/lib/hooks/use-available-models";
 import type { DisplayModel } from "@/lib/display-model";
+import { NavLinks } from "@/components/nav-links";
 
 function ModelSelectorHandler({
   modelId,
@@ -67,7 +68,8 @@ export function Chat({ modelId = DEFAULT_MODEL }: { modelId: string }) {
 
   return (
     <div className="grid w-screen h-screen grid-rows-[auto_1fr_auto] max-w-[800px] m-auto">
-      <div className="flex justify-end p-4">
+      <div className="flex justify-between p-4 items-center">
+        <NavLinks />
         <ThemeToggle />
       </div>
       <div className="flex flex-col-reverse gap-8 p-8 overflow-y-auto">
@@ -110,7 +112,7 @@ export function Chat({ modelId = DEFAULT_MODEL }: { modelId: string }) {
           )}
 
           {modelWarning && (
-            <Alert variant="warning" className="bg-yellow-500/20 text-foreground border-yellow-600">
+            <Alert variant="warning" className="mb-4">
               <AlertCircle className="h-4 w-4 text-yellow-600" />
               <AlertDescription className="text-sm">
                 {modelWarning}
@@ -127,11 +129,13 @@ export function Chat({ modelId = DEFAULT_MODEL }: { modelId: string }) {
         className="flex justify-center px-8 pt-0 pb-8"
       >
         <Card className="w-full p-0">
-          <CardContent className="flex items-center gap-3 p-2">
-            <ModelSelectorHandler
-              modelId={modelId}
-              onModelIdChange={handleModelIdChange}
-            />
+          <CardContent className="flex flex-col md:flex-row md:items-center gap-3 p-2">
+            <div className="md:min-w-[280px]">
+              <ModelSelectorHandler
+                modelId={modelId}
+                onModelIdChange={handleModelIdChange}
+              />
+            </div>
             <div className="flex flex-1 items-center">
               <Input
                 name="prompt"
