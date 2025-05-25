@@ -69,8 +69,8 @@ function buildModelList(models: (GatewayLanguageModelEntry & { available?: boole
        model.id.includes("large") ? 30 : 25);
     
     return {
-      id: model.id,
-      label: model.name,
+    id: model.id,
+    label: model.name,
       isAvailable,
       tokensPerSecond,
       rank: model.rank // Include the rank information
@@ -127,20 +127,6 @@ export function useAvailableModels() {
     [retryCount]
   );
 
-  // Function to update model performance metrics
-  const updateModelPerformance = useCallback((modelId: string, tokensPerSecond: number) => {
-    setModels((currentModels) => 
-      currentModels.map((model) => 
-        model.id === modelId 
-          ? { ...model, tokensPerSecond } 
-          : model
-      )
-    );
-    
-    // Also update our cached performance data
-    MODEL_PERFORMANCE.set(modelId, tokensPerSecond);
-  }, []);
-
   useEffect(() => {
     if (retryCount === 0) {
       fetchModels(false);
@@ -152,5 +138,5 @@ export function useAvailableModels() {
     }
   }, [retryCount, fetchModels]);
 
-  return { models, isLoading, error, updateModelPerformance };
+  return { models, isLoading, error };
 }

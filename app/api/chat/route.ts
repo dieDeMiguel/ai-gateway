@@ -28,16 +28,16 @@ export async function POST(req: Request) {
       console.warn(`Model ${modelId} is unavailable, falling back to ${DEFAULT_MODEL}`);
     }
 
-    const result = streamText({
+  const result = streamText({
       model: gateway(effectiveModelId),
-      system: "You are a software engineer exploring Generative AI.",
-      messages: convertToModelMessages(messages),
-      onError: (e) => {
-        console.error("Error while streaming.", e);
-      },
-    });
+    system: "You are a software engineer exploring Generative AI.",
+    messages: convertToModelMessages(messages),
+    onError: (e) => {
+      console.error("Error while streaming.", e);
+    },
+  });
 
-    return result.toUIMessageStreamResponse();
+  return result.toUIMessageStreamResponse();
   } catch (error) {
     console.error("Error in chat API:", error);
     return new Response(

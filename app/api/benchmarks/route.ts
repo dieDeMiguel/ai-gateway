@@ -1,78 +1,108 @@
-import { NextResponse } from 'next/server';
-import { benchmarkModel, benchmarkModels, getCachedBenchmarkResults } from '@/lib/benchmarks/benchmark-service';
+import { NextRequest, NextResponse } from 'next/server';
+import { getAllBenchmarks, runModelBenchmark } from '@/lib/benchmarks/benchmark-service';
+import { useAvailableModels } from '@/lib/hooks/use-available-models';
 
-// Define standard benchmarking parameters
-const BENCHMARK_PROMPT = "Explain the theory of relativity in detail, covering both special and general relativity, their implications, and experimental verifications. Include mathematical formulations and discuss the historical context of Einstein's work.";
-const BENCHMARK_MAX_TOKENS = 1000;
+// Simple in-memory cache to avoid too many benchmark runs
+const benchmarkCache = new Map<string, any>();
+let lastFetchTime = 0;
+const CACHE_TTL = 1000 * 60 * 5; // 5 minutes
 
-export async function GET(request: Request) {
+export async function GET(req: NextRequest) {
   try {
-    // Extract model ID from query parameters if provided
-    const url = new URL(request.url);
-    const modelId = url.searchParams.get('model');
-    
-    // Get cached results for all models
-    const cachedResults = getCachedBenchmarkResults();
-    
-    if (modelId) {
-      // Benchmark a specific model if provided
-      try {
-        const result = await benchmarkModel(
-          modelId,
-          BENCHMARK_PROMPT,
-          BENCHMARK_MAX_TOKENS
-        );
-        return NextResponse.json({ success: true, result });
-      } catch (error) {
-        const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-        return NextResponse.json(
-          { success: false, error: errorMessage, cachedResult: cachedResults.get(modelId) },
-          { status: 500 }
-        );
-      }
+    const now = Date.now();
+    // Check cache first
+    if (benchmarkCache.size > 0 && now - lastFetchTime < CACHE_TTL) {
+      return NextResponse.json({ 
+        data: Array.from(benchmarkCache.values()),
+        source: 'cache'
+      });
     }
+
+    // Get the list of models from our models API
+    const modelsResponse = await fetch(`${req.nextUrl.origin}/api/models`);
+    if (!modelsResponse.ok) {
+      throw new Error('Failed to fetch models');
+    }
+
+    const { models } = await modelsResponse.json();
+    const displayModels = models.map((model: any) => ({
+      id: model.id,
+      label: model.name,
+      isAvailable: model.available !== false,
+    }));
+
+    // Get benchmark results
+    const benchmarkResults = await getAllBenchmarks(displayModels);
     
-    // Return all cached benchmark results
-    return NextResponse.json({
-      success: true,
-      results: Array.from(cachedResults.entries()).map(([id, result]) => result)
+    // Format the results
+    const formattedResults = Array.from(benchmarkResults.entries()).map(
+      ([modelId, result]) => {
+        const model = displayModels.find(m => m.id === modelId);
+        return {
+          modelId,
+          modelName: model?.label || modelId,
+          provider: modelId.split('/')[0],
+          tokensPerSecond: result.tokensPerSecond,
+          timeToFirstToken: result.timeToFirstToken,
+          totalTime: result.totalTime,
+          timestamp: result.timestamp
+        };
+      }
+    );
+
+    // Update cache
+    formattedResults.forEach(result => {
+      benchmarkCache.set(result.modelId, result);
+    });
+    lastFetchTime = now;
+
+    return NextResponse.json({ 
+      data: formattedResults,
+      source: 'benchmark'
     });
   } catch (error) {
-    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+    console.error('Error in benchmarks API:', error);
     return NextResponse.json(
-      { success: false, error: errorMessage },
+      { error: 'Failed to fetch benchmark data' },
       { status: 500 }
     );
   }
 }
 
-export async function POST(request: Request) {
+export async function POST(req: NextRequest) {
   try {
-    const body = await request.json();
-    const { models, prompt, maxTokens } = body;
+    const { modelId } = await req.json();
     
-    if (!models || !Array.isArray(models) || models.length === 0) {
+    if (!modelId) {
       return NextResponse.json(
-        { success: false, error: 'No models specified for benchmarking' },
+        { error: 'Model ID is required' },
         { status: 400 }
       );
     }
+
+    // Run benchmark for the requested model
+    const result = await runModelBenchmark(modelId);
     
-    // Run benchmarks for all specified models
-    const results = await benchmarkModels(
-      models,
-      prompt || BENCHMARK_PROMPT,
-      maxTokens || BENCHMARK_MAX_TOKENS
-    );
-    
+    if (!result) {
+      return NextResponse.json(
+        { error: 'Failed to run benchmark' },
+        { status: 500 }
+      );
+    }
+
     return NextResponse.json({
-      success: true,
-      results: Array.from(results.entries()).map(([id, result]) => result)
+      data: {
+        modelId: result.modelId,
+        tokensPerSecond: result.tokensPerSecond,
+        timeToFirstToken: result.timeToFirstToken,
+        totalTime: result.totalTime,
+        timestamp: result.timestamp
+      }
     });
   } catch (error) {
-    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+    console.error('Error running benchmark:', error);
     return NextResponse.json(
-      { success: false, error: errorMessage },
+      { error: 'Failed to run benchmark' },
       { status: 500 }
     );
   }
