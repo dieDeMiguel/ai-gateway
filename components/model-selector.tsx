@@ -12,17 +12,18 @@ import {
   CommandGroup,
   CommandInput,
   CommandItem,
-} from "../ui/command";
+} from "../components/ui/command";
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from "../ui/popover";
+} from "../components/ui/popover";
+import { DisplayModel } from "../lib/display-model";
 
 export type ModelSelectorProps = {
   value: string;
   onChange: (value: string) => void;
-  models: any[];
+  models: DisplayModel[];
   loading: boolean;
 };
 
@@ -46,21 +47,15 @@ export function ModelSelector({ value, onChange, models, loading }: ModelSelecto
           ) : selectedModel ? (
             <div className="flex items-center gap-2 text-left">
               <div>
-                <div className="font-medium">{selectedModel.name}</div>
+                <div className="font-medium">{selectedModel.label}</div>
                 <div className="text-xs text-muted-foreground">
-                  {selectedModel.specification.provider}
+                  {selectedModel.isAvailable ? "Available" : "Unavailable"}
                 </div>
               </div>
               {selectedModel.tokensPerSecond && (
                 <div className="ml-auto text-xs bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300 px-2 py-1 rounded-md flex items-center">
                   <ZapIcon className="w-3 h-3 mr-1" />
                   {selectedModel.tokensPerSecond.toFixed(1)} tok/s
-                </div>
-              )}
-              {selectedModel.available === false && (
-                <div className="ml-auto text-xs bg-amber-100 dark:bg-amber-900/30 text-amber-800 dark:text-amber-300 px-2 py-1 rounded-md flex items-center">
-                  <AlertTriangleIcon className="w-3 h-3 mr-1" />
-                  Unavailable
                 </div>
               )}
             </div>
@@ -75,34 +70,28 @@ export function ModelSelector({ value, onChange, models, loading }: ModelSelecto
           <CommandInput placeholder="Search models..." />
           <CommandEmpty>No model found.</CommandEmpty>
           <CommandGroup className="max-h-[300px] overflow-auto">
-            {models.map((model: any) => (
+            {models.map((model) => (
               <CommandItem
                 key={model.id}
                 value={model.id}
-                onSelect={(currentValue: string) => {
+                onSelect={(currentValue) => {
                   onChange(currentValue);
                   setOpen(false);
                 }}
-                disabled={model.available === false}
+                disabled={model.isAvailable === false}
                 className={cn(
                   "flex flex-col items-start py-2",
-                  model.available === false && "opacity-50"
+                  model.isAvailable === false && "opacity-50"
                 )}
               >
                 <div className="flex w-full items-center justify-between">
                   <div>
-                    <div className="font-medium">{model.name}</div>
+                    <div className="font-medium">{model.label}</div>
                     <div className="text-xs text-muted-foreground">
-                      {model.specification.provider}
+                      {model.isAvailable ? "Available" : "Unavailable"}
                     </div>
                   </div>
                   <div className="flex items-center gap-2">
-                    {model.available === false && (
-                      <div className="text-xs bg-amber-100 dark:bg-amber-900/30 text-amber-800 dark:text-amber-300 px-2 py-1 rounded-md flex items-center">
-                        <AlertTriangleIcon className="w-3 h-3 mr-1" />
-                        Unavailable
-                      </div>
-                    )}
                     {model.tokensPerSecond && (
                       <div className="text-xs bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300 px-2 py-1 rounded-md flex items-center">
                         <ZapIcon className="w-3 h-3 mr-1" />
@@ -114,11 +103,6 @@ export function ModelSelector({ value, onChange, models, loading }: ModelSelecto
                     )}
                   </div>
                 </div>
-                {model.timeToFirstToken && (
-                  <div className="mt-1 text-xs text-muted-foreground">
-                    First token: {model.timeToFirstToken.toFixed(2)}s | Total time (100 tokens): {model.totalTime.toFixed(2)}s
-                  </div>
-                )}
               </CommandItem>
             ))}
           </CommandGroup>

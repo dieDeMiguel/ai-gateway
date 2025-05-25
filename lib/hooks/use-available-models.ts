@@ -127,6 +127,20 @@ export function useAvailableModels() {
     [retryCount]
   );
 
+  // Function to update model performance metrics
+  const updateModelPerformance = useCallback((modelId: string, tokensPerSecond: number) => {
+    setModels((currentModels) => 
+      currentModels.map((model) => 
+        model.id === modelId 
+          ? { ...model, tokensPerSecond } 
+          : model
+      )
+    );
+    
+    // Also update our cached performance data
+    MODEL_PERFORMANCE.set(modelId, tokensPerSecond);
+  }, []);
+
   useEffect(() => {
     if (retryCount === 0) {
       fetchModels(false);
@@ -138,5 +152,5 @@ export function useAvailableModels() {
     }
   }, [retryCount, fetchModels]);
 
-  return { models, isLoading, error };
+  return { models, isLoading, error, updateModelPerformance };
 }
