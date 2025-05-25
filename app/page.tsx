@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { ModelSelector } from "@/components/model-selector";
 import { Button } from "@/components/ui/button";
@@ -11,6 +11,28 @@ import Link from "next/link";
 export default function Home() {
   const [selectedModel, setSelectedModel] = useState("");
   const router = useRouter();
+  const [models, setModels] = useState<any[]>([]);
+  const [loadingModels, setLoadingModels] = useState(true);
+
+  useEffect(() => {
+    const fetchModels = async () => {
+      try {
+        setLoadingModels(true);
+        const response = await fetch("/api/models");
+        if (!response.ok) {
+          throw new Error("Failed to fetch models");
+        }
+        const data = await response.json();
+        setModels(data.models);
+      } catch (error) {
+        console.error("Error fetching models:", error);
+      } finally {
+        setLoadingModels(false);
+      }
+    };
+
+    fetchModels();
+  }, []);
 
   const handleContinue = () => {
     if (selectedModel) {
@@ -34,7 +56,12 @@ export default function Home() {
           <div className="space-y-4">
             <h2 className="text-lg font-medium">Select a model to continue</h2>
             <div className="flex flex-col md:flex-row gap-4 items-start md:items-center">
-              <ModelSelector value={selectedModel} onChange={setSelectedModel} />
+              <ModelSelector 
+                value={selectedModel} 
+                onChange={setSelectedModel} 
+                models={models}
+                loading={loadingModels}
+              />
               <Button 
                 onClick={handleContinue} 
                 disabled={!selectedModel}

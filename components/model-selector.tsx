@@ -12,42 +12,22 @@ import {
   CommandGroup,
   CommandInput,
   CommandItem,
-} from "@/components/ui/command";
+} from "../ui/command";
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from "@/components/ui/popover";
+} from "../ui/popover";
 
 export type ModelSelectorProps = {
   value: string;
   onChange: (value: string) => void;
+  models: any[];
+  loading: boolean;
 };
 
-export function ModelSelector({ value, onChange }: ModelSelectorProps) {
+export function ModelSelector({ value, onChange, models, loading }: ModelSelectorProps) {
   const [open, setOpen] = React.useState(false);
-  const [models, setModels] = React.useState<any[]>([]);
-  const [loading, setLoading] = React.useState(true);
-
-  React.useEffect(() => {
-    const fetchModels = async () => {
-      try {
-        setLoading(true);
-        const response = await fetch("/api/models");
-        if (!response.ok) {
-          throw new Error("Failed to fetch models");
-        }
-        const data = await response.json();
-        setModels(data.models);
-      } catch (error) {
-        console.error("Error fetching models:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchModels();
-  }, []);
 
   const selectedModel = models.find((model) => model.id === value);
 
@@ -95,11 +75,11 @@ export function ModelSelector({ value, onChange }: ModelSelectorProps) {
           <CommandInput placeholder="Search models..." />
           <CommandEmpty>No model found.</CommandEmpty>
           <CommandGroup className="max-h-[300px] overflow-auto">
-            {models.map((model) => (
+            {models.map((model: any) => (
               <CommandItem
                 key={model.id}
                 value={model.id}
-                onSelect={(currentValue) => {
+                onSelect={(currentValue: string) => {
                   onChange(currentValue);
                   setOpen(false);
                 }}
@@ -116,7 +96,7 @@ export function ModelSelector({ value, onChange }: ModelSelectorProps) {
                       {model.specification.provider}
                     </div>
                   </div>
-          <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-2">
                     {model.available === false && (
                       <div className="text-xs bg-amber-100 dark:bg-amber-900/30 text-amber-800 dark:text-amber-300 px-2 py-1 rounded-md flex items-center">
                         <AlertTriangleIcon className="w-3 h-3 mr-1" />
@@ -137,8 +117,8 @@ export function ModelSelector({ value, onChange }: ModelSelectorProps) {
                 {model.timeToFirstToken && (
                   <div className="mt-1 text-xs text-muted-foreground">
                     First token: {model.timeToFirstToken.toFixed(2)}s | Total time (100 tokens): {model.totalTime.toFixed(2)}s
-          </div>
-        )}
+                  </div>
+                )}
               </CommandItem>
             ))}
           </CommandGroup>

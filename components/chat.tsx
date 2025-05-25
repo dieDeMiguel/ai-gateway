@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -17,6 +17,28 @@ export function Chat({ modelId }: ChatProps) {
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
   const [currentModel, setCurrentModel] = useState(modelId);
+  const [models, setModels] = useState<any[]>([]);
+  const [loadingModels, setLoadingModels] = useState(true);
+
+  useEffect(() => {
+    const fetchModels = async () => {
+      try {
+        setLoadingModels(true);
+        const response = await fetch("/api/models");
+        if (!response.ok) {
+          throw new Error("Failed to fetch models");
+        }
+        const data = await response.json();
+        setModels(data.models);
+      } catch (error) {
+        console.error("Error fetching models:", error);
+      } finally {
+        setLoadingModels(false);
+      }
+    };
+
+    fetchModels();
+  }, []);
 
   const handleSend = async () => {
     if (!input.trim() || loading) return;
@@ -72,6 +94,8 @@ export function Chat({ modelId }: ChatProps) {
         <ModelSelector 
           value={currentModel} 
           onChange={setCurrentModel} 
+          models={models}
+          loading={loadingModels}
         />
       </div>
 
@@ -104,7 +128,7 @@ export function Chat({ modelId }: ChatProps) {
                 >
                   {message.content}
                 </div>
-        </div>
+              </div>
             ))
           )}
         </CardContent>
