@@ -3,6 +3,7 @@
 import * as React from "react";
 import { CaretSortIcon, CheckIcon } from "@radix-ui/react-icons";
 import { ZapIcon, AlertTriangleIcon } from "lucide-react";
+import { useEffect, useState } from "react";
 
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -23,12 +24,38 @@ import { DisplayModel } from "../lib/display-model";
 export type ModelSelectorProps = {
   value: string;
   onChange: (value: string) => void;
-  models: DisplayModel[];
-  loading: boolean;
 };
 
-export function ModelSelector({ value, onChange, models, loading }: ModelSelectorProps) {
-  const [open, setOpen] = React.useState(false);
+export function ModelSelector({ value, onChange }: ModelSelectorProps) {
+  const [open, setOpen] = useState(false);
+  const [models, setModels] = useState<DisplayModel[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchModels = async () => {
+      try {
+        setLoading(true);
+        const response = await fetch("/api/models");
+        if (!response.ok) {
+          throw new Error("Failed to fetch models");
+        }
+        const data = await response.json();
+        const mappedModels = data.models.map((model: any) => ({
+          id: model.id,
+          label: model.name || model.id,
+          isAvailable: model.available !== false,
+          tokensPerSecond: model.tokensPerSecond || 0,
+        }));
+        setModels(mappedModels);
+      } catch (error) {
+        console.error("Error fetching models:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchModels();
+  }, []);
 
   const selectedModel = models.find((model) => model.id === value);
 
@@ -45,17 +72,17 @@ export function ModelSelector({ value, onChange, models, loading }: ModelSelecto
           {loading ? (
             "Loading models..."
           ) : selectedModel ? (
-            <div className="flex items-center gap-2 text-left">
-              <div>
+            <div className="flex items-center justify-between gap-2 text-left w-full">
+              <div className="w-full">
                 <div className="font-medium">{selectedModel.label}</div>
                 <div className="text-xs text-muted-foreground">
                   {selectedModel.isAvailable ? "Available" : "Unavailable"}
                 </div>
               </div>
-              {selectedModel.tokensPerSecond && (
+              {selectedModel.tokensPerSecond !== undefined && selectedModel.tokensPerSecond > 0 && (
                 <div className="ml-auto text-xs bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300 px-2 py-1 rounded-md flex items-center">
                   <ZapIcon className="w-3 h-3 mr-1" />
-                  {selectedModel.tokensPerSecond.toFixed(1)} tok/s
+                  {selectedModel.tokensPerSecond.toFixed(1)} token/s
                 </div>
               )}
             </div>
@@ -92,10 +119,10 @@ export function ModelSelector({ value, onChange, models, loading }: ModelSelecto
                     </div>
                   </div>
                   <div className="flex items-center gap-2">
-                    {model.tokensPerSecond && (
+                    {model.tokensPerSecond !== undefined && model.tokensPerSecond > 0 && (
                       <div className="text-xs bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300 px-2 py-1 rounded-md flex items-center">
                         <ZapIcon className="w-3 h-3 mr-1" />
-                        {model.tokensPerSecond.toFixed(1)}
+                        {model.tokensPerSecond.toFixed(1)} token/s
                       </div>
                     )}
                     {model.id === value && (
