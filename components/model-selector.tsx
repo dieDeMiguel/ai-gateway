@@ -40,16 +40,16 @@ export function ModelSelector({ value, onChange, models, loading }: ModelSelecto
           variant="outline"
           role="combobox"
           aria-expanded={open}
-          className="w-full md:w-[300px] justify-between"
+          className="w-full md:w-[350px] justify-between"
           disabled={loading}
         >
           {loading ? (
             "Loading models..."
           ) : selectedModel ? (
             <div className="flex items-center justify-between gap-2 text-left w-full">
-              <div className="w-full">
+              <div className="w-full flex items-center justify-between">
                 <div className="font-medium">{selectedModel.label}</div>
-                <div className="text-xs text-muted-foreground">
+                <div className="text-xs text-muted-foreground ml-2">
                   {selectedModel.isAvailable ? "Available" : "Unavailable"}
                 </div>
               </div>

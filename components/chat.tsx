@@ -124,7 +124,7 @@ export function Chat({ modelId = DEFAULT_MODEL }: { modelId: string }) {
                 onChange={handleInputChange}
                 value={input}
                 autoFocus
-                className="flex-1 border-0 focus-visible:ring-0 focus-visible:ring-offset-0"
+                className="flex-1 border-0 focus-visible:ring-0 focus-visible:ring-offset-0 w-full md:w-[400px]"
                 onKeyDown={(e) => {
                   if (e.metaKey && e.key === "Enter") {
                     handleSubmit(e, { body: { modelId: currentModelId } });
