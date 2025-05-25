@@ -141,9 +141,9 @@ export function Leaderboard() {
             <TableRow>
               <TableHead>Model</TableHead>
               <TableHead>Provider</TableHead>
-              <TableHead className="text-right">Tokens/Second</TableHead>
-              <TableHead className="text-right">First Token (s)</TableHead>
-              <TableHead className="text-right">Total Time (s)</TableHead>
+              <TableHead className="text-center">Tokens/Second</TableHead>
+              <TableHead className="text-center">First Token (s)</TableHead>
+              <TableHead className="text-center">Total Time (s)</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -155,15 +155,15 @@ export function Leaderboard() {
                 <TableCell className="capitalize">
                   {entry.provider}
                 </TableCell>
-                <TableCell className="text-right">
+                <TableCell className="text-center">
                   <span className="font-medium">
                     {entry.tokensPerSecond.toFixed(1)}
                   </span>
                 </TableCell>
-                <TableCell className="text-right">
+                <TableCell className="text-center">
                   {entry.timeToFirstToken.toFixed(2)}
                 </TableCell>
-                <TableCell className="text-right">
+                <TableCell className="text-center">
                   {entry.totalTime.toFixed(2)}
                 </TableCell>
               </TableRow>
