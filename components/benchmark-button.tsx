@@ -30,12 +30,17 @@ export function BenchmarkButton({
       const response = await fetch(`/api/benchmarks?model=${encodeURIComponent(modelId)}`);
       const data = await response.json();
       
-      if (!data.success) {
-        throw new Error(data.error || 'Benchmark failed');
+      if (!data.data || data.data.length === 0) {
+        throw new Error('No benchmark data available');
       }
       
-      if (onBenchmarkComplete && data.result) {
-        onBenchmarkComplete(data.result);
+      const benchmarkResult = data.data.find((result: any) => result.modelId === modelId);
+      if (!benchmarkResult) {
+        throw new Error('Benchmark result for the model not found');
+      }
+      
+      if (onBenchmarkComplete) {
+        onBenchmarkComplete(benchmarkResult);
       }
     } catch (err) {
       console.error('Benchmark error:', err);

@@ -24,38 +24,12 @@ import { DisplayModel } from "../lib/display-model";
 export type ModelSelectorProps = {
   value: string;
   onChange: (value: string) => void;
+  models: DisplayModel[];
+  loading: boolean;
 };
 
-export function ModelSelector({ value, onChange }: ModelSelectorProps) {
+export function ModelSelector({ value, onChange, models, loading }: ModelSelectorProps) {
   const [open, setOpen] = useState(false);
-  const [models, setModels] = useState<DisplayModel[]>([]);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    const fetchModels = async () => {
-      try {
-        setLoading(true);
-        const response = await fetch("/api/models");
-        if (!response.ok) {
-          throw new Error("Failed to fetch models");
-        }
-        const data = await response.json();
-        const mappedModels = data.models.map((model: any) => ({
-          id: model.id,
-          label: model.name || model.id,
-          isAvailable: model.available !== false,
-          tokensPerSecond: model.tokensPerSecond || 0,
-        }));
-        setModels(mappedModels);
-      } catch (error) {
-        console.error("Error fetching models:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchModels();
-  }, []);
 
   const selectedModel = models.find((model) => model.id === value);
 
