@@ -16,11 +16,13 @@ import { cn } from "../lib/utils";
 import { ThemeToggle } from "./ui/theme-toggle";
 import { useAvailableModels } from "../lib/hooks/use-available-models";
 import { BenchmarkButton } from "./benchmark-button";
+import { BarChart2 } from "lucide-react";
 
 export function Chat({ modelId = DEFAULT_MODEL }: { modelId: string }) {
   const [currentModelId, setCurrentModelId] = useState(modelId);
   const { models, isLoading, error: modelError, updateModelPerformance } = useAvailableModels();
   const [modelWarning, setModelWarning] = useState<string | null>(null);
+  const router = useRouter();
 
   // Check if the selected model is available
   useEffect(() => {
@@ -50,6 +52,14 @@ export function Chat({ modelId = DEFAULT_MODEL }: { modelId: string }) {
     <div className="grid w-screen h-screen grid-rows-[auto_1fr_auto] max-w-[800px] m-auto">
       <div className="flex justify-between p-4 items-center">
         <ThemeToggle />
+        <Button
+          variant="outline"
+          className="gap-2"
+          onClick={() => router.push("/benchmarks")}
+        >
+          <BarChart2 className="h-4 w-4" />
+          View Performance Benchmarks
+        </Button>
       </div>
       <div className="flex flex-col-reverse gap-8 p-8 overflow-y-auto">
         {messages.toReversed().map((m) => (
