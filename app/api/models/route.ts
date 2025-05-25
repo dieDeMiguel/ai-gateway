@@ -51,7 +51,8 @@ export async function GET() {
           e.model.toLowerCase().includes(mappedName.toLowerCase()) || 
           mappedName.toLowerCase().includes(e.model.toLowerCase())
         );
-        
+        console.log('entry', entry); 
+        console.log('entries', entries); 
         if (entry) {
           leaderboardData[modelId] = { 
             tokensPerSecond: entry.tokensPerSecond, 

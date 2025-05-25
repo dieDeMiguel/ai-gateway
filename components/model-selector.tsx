@@ -12,7 +12,7 @@ import {
   SelectGroup,
   SelectLabel,
 } from "@/components/ui/select";
-import { memo } from "react";
+import { memo, useState, useCallback } from "react";
 import { cn } from "@/lib/utils";
 import {
   Tooltip,
@@ -20,6 +20,8 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { BenchmarkButton } from "@/components/benchmark-button";
+import { BenchmarkResult } from "@/lib/benchmarks/benchmark-service";
 
 type ModelSelectorProps = {
   modelId: string;
@@ -30,7 +32,13 @@ export const ModelSelector = memo(function ModelSelector({
   modelId = DEFAULT_MODEL,
   onModelChange,
 }: ModelSelectorProps) {
-  const { models, isLoading, error } = useAvailableModels();
+  const { models, isLoading, error, updateModelPerformance } = useAvailableModels();
+  const [benchmarkingModelId, setBenchmarkingModelId] = useState<string | null>(null);
+
+  const handleBenchmarkComplete = useCallback((modelId: string, result: BenchmarkResult) => {
+    setBenchmarkingModelId(null);
+    updateModelPerformance(modelId, result.tokensPerSecond);
+  }, [updateModelPerformance]);
 
   return (
     <Select
@@ -61,27 +69,35 @@ export const ModelSelector = memo(function ModelSelector({
               <TooltipProvider>
                 <Tooltip delayDuration={300}>
                   <TooltipTrigger asChild>
-                    <div className="flex items-center gap-2 py-1.5 px-2 w-full">
-                      <div 
-                        className={cn(
-                          "w-2 h-2 rounded-full flex-shrink-0", 
-                          model.isAvailable === false ? "bg-red-500" : "bg-green-500"
-                        )} 
-                        aria-label={model.isAvailable === false ? "Unavailable" : "Available"}
-                      />
-                      <div className="flex items-center gap-1 min-w-[140px]">
-                        {model.rank && (
-                          <span className="text-xs text-muted-foreground bg-muted px-1 rounded">
-                            #{model.rank}
+                    <div className="flex items-center justify-between py-1.5 px-2 w-full">
+                      <div className="flex items-center gap-2">
+                        <div 
+                          className={cn(
+                            "w-2 h-2 rounded-full flex-shrink-0", 
+                            model.isAvailable === false ? "bg-red-500" : "bg-green-500"
+                          )} 
+                          aria-label={model.isAvailable === false ? "Unavailable" : "Available"}
+                        />
+                        <div className="flex items-center gap-1 min-w-[140px]">
+                          {model.rank && (
+                            <span className="text-xs text-muted-foreground bg-muted px-1 rounded">
+                              #{model.rank}
+                            </span>
+                          )}
+                          <span className="truncate">{model.label}</span>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-2 ml-auto">
+                        {model.tokensPerSecond && (
+                          <span className="text-xs text-muted-foreground flex-shrink-0">
+                            {model.tokensPerSecond.toFixed(1)} tok/s
                           </span>
                         )}
-                        <span className="truncate">{model.label}</span>
+                        <BenchmarkButton
+                          modelId={model.id}
+                          onBenchmarkComplete={(result) => handleBenchmarkComplete(model.id, result)}
+                        />
                       </div>
-                      {model.tokensPerSecond && (
-                        <span className="text-xs text-muted-foreground ml-auto flex-shrink-0">
-                          {model.tokensPerSecond.toFixed(1)} tok/s
-                        </span>
-                      )}
                     </div>
                   </TooltipTrigger>
                   <TooltipContent side="right" className="max-w-[320px]">
