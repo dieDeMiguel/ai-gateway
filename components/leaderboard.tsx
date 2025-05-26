@@ -14,6 +14,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
 import { RefreshCw } from "lucide-react";
+import Link from "next/link";
 
 type BenchmarkEntry = {
   modelId: string;
@@ -56,14 +57,14 @@ export function Leaderboard() {
     setRefreshing(true);
     // Force the API to regenerate benchmark data by adding a cache-busting param
     fetch(`/api/benchmarks?refresh=${Date.now()}`)
-      .then(res => res.json())
-      .then(result => {
+      .then((res) => res.json())
+      .then((result) => {
         setData(result.data);
         setDataSource(result.source || "benchmark");
         setError(null);
         setRefreshing(false);
       })
-      .catch(err => {
+      .catch((err) => {
         console.error("Error refreshing benchmarks:", err);
         setError("Failed to refresh benchmark data");
         setRefreshing(false);
@@ -109,28 +110,46 @@ export function Leaderboard() {
   }
 
   // Sort by tokens per second (highest first)
-  const sortedData = [...data].sort((a, b) => b.tokensPerSecond - a.tokensPerSecond);
+  const sortedData = [...data].sort(
+    (a, b) => b.tokensPerSecond - a.tokensPerSecond
+  );
 
   return (
     <Card>
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
         <CardTitle>LLM Performance Benchmarks</CardTitle>
-        <Button 
-          onClick={handleRefresh} 
-          size="sm" 
-          variant="outline"
-          disabled={refreshing}
-        >
-          <RefreshCw className={`h-4 w-4 mr-2 ${refreshing ? 'animate-spin' : ''}`} />
-          {refreshing ? "Refreshing..." : "Refresh"}
-        </Button>
+        <div className="flex gap-2">
+          <Button
+            onClick={handleRefresh}
+            size="sm"
+            variant="outline"
+            disabled={refreshing}
+            className="gap-2"
+          >
+            <RefreshCw
+              className={`h-4 w-4 mr-2 ${refreshing ? "animate-spin" : ""}`}
+            />
+            {refreshing ? "Refreshing..." : "Refresh"}
+          </Button>
+          <Link href="/chat">
+            <Button size="sm" variant="outline" className="gap-2">
+              Go to Chat
+            </Button>
+          </Link>
+        </div>
       </CardHeader>
       <CardContent>
         <div className="mb-4 text-sm text-muted-foreground">
-          {dataSource === 'cache' ? (
-            <p>Showing cached benchmark data. Click refresh to generate new benchmarks.</p>
+          {dataSource === "cache" ? (
+            <p>
+              Showing cached benchmark data. Click refresh to generate new
+              benchmarks.
+            </p>
           ) : (
-            <p>Showing freshly generated benchmark data. These values include random variations to simulate real-world conditions.</p>
+            <p>
+              Showing freshly generated benchmark data. These values include
+              random variations to simulate real-world conditions.
+            </p>
           )}
         </div>
         <Table>
@@ -149,12 +168,8 @@ export function Leaderboard() {
           <TableBody>
             {sortedData.map((entry) => (
               <TableRow key={entry.modelId}>
-                <TableCell className="font-medium">
-                  {entry.modelName}
-                </TableCell>
-                <TableCell className="capitalize">
-                  {entry.provider}
-                </TableCell>
+                <TableCell className="font-medium">{entry.modelName}</TableCell>
+                <TableCell className="capitalize">{entry.provider}</TableCell>
                 <TableCell className="text-center">
                   <span className="font-medium">
                     {entry.tokensPerSecond.toFixed(1)}
@@ -173,4 +188,4 @@ export function Leaderboard() {
       </CardContent>
     </Card>
   );
-} 
+}
