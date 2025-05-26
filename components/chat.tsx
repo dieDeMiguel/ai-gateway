@@ -131,6 +131,12 @@ export function Chat({ modelId = DEFAULT_MODEL }: { modelId: string }) {
                 className="w-full max-h-52 resize-none overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300 rounded-xl border border-gray-300 bg-muted/50 p-4 text-base leading-relaxed shadow-sm focus:border-black focus:outline-none focus:ring-0 transition-all duration-200"
                 value={input}
                 onChange={handleInputChange}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault();
+                    handleSubmit(e, { body: { modelId: currentModelId } });
+                  }
+                }}
               />
             </div>
             <div className="flex justify-between items-center">
