@@ -1,6 +1,4 @@
-"use client";
-
-import { useState, useEffect } from "react";
+// Server Component (no "use client" directive)
 import {
   Table,
   TableBody,
@@ -10,134 +8,44 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Skeleton } from "@/components/ui/skeleton";
-import { Button } from "@/components/ui/button";
-import { RefreshCw } from "lucide-react";
-import Link from "next/link";
+import { Card, CardContent } from "@/components/ui/card";
+import { BenchmarkEntry } from "@/lib/types";
+import { LeaderboardHeader } from "./leaderboard-header";
 
-type BenchmarkEntry = {
-  modelId: string;
-  modelName: string;
-  provider: string;
-  tokensPerSecond: number;
-  timeToFirstToken: number;
-  totalTime: number;
-  timestamp: number;
-};
 
-export function Leaderboard() {
-  const [data, setData] = useState<BenchmarkEntry[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [refreshing, setRefreshing] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [dataSource, setDataSource] = useState<string>("loading");
-
-  const fetchBenchmarkData = async () => {
-    try {
-      setLoading(true);
-      const response = await fetch("/api/benchmarks");
-      if (!response.ok) {
-        throw new Error(`Failed to fetch benchmark data: ${response.status}`);
-      }
-      const result = await response.json();
-      setData(result.data);
-      setDataSource(result.source || "benchmark");
-      setError(null);
-    } catch (err) {
-      console.error("Error fetching benchmarks:", err);
-      setError("Failed to load benchmark data");
-    } finally {
-      setLoading(false);
-      setRefreshing(false);
-    }
-  };
-
-  const handleRefresh = () => {
-    setRefreshing(true);
-    // Force the API to regenerate benchmark data by adding a cache-busting param
-    fetch(`/api/benchmarks?refresh=${Date.now()}`)
-      .then((res) => res.json())
-      .then((result) => {
-        setData(result.data);
-        setDataSource(result.source || "benchmark");
-        setError(null);
-        setRefreshing(false);
-      })
-      .catch((err) => {
-        console.error("Error refreshing benchmarks:", err);
-        setError("Failed to refresh benchmark data");
-        setRefreshing(false);
-      });
-  };
-
-  useEffect(() => {
-    fetchBenchmarkData();
-  }, []);
-
-  if (loading) {
-    return (
-      <Card>
-        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle>LLM Performance Benchmarks</CardTitle>
-          <Button disabled size="sm" variant="outline">
-            <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
-            Loading
-          </Button>
-        </CardHeader>
-        <CardContent>
-          <Skeleton className="h-[400px] w-full rounded-md" />
-        </CardContent>
-      </Card>
-    );
+async function getBenchmarkData() {
+  // For server components in Next.js, we need an absolute URL when fetching
+  const protocol = process.env.NODE_ENV === 'production' ? 'https' : 'http';
+  const host = process.env.VERCEL_URL || 'localhost:3000';
+  const baseUrl = `${protocol}://${host}`;
+  
+  const res = await fetch(`${baseUrl}/api/benchmarks`, {
+    next: { revalidate: 3600 } // 1 hour
+  });
+  
+  if (!res.ok) {
+    throw new Error('Failed to fetch benchmark data');
   }
+  
+  return res.json() as Promise<{
+    data: BenchmarkEntry[];
+    source: string;
+  }>;
+}
 
-  if (error) {
-    return (
-      <Card>
-        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle>LLM Performance Benchmarks</CardTitle>
-          <Button onClick={handleRefresh} size="sm" variant="outline">
-            <RefreshCw className="h-4 w-4 mr-2" />
-            Retry
-          </Button>
-        </CardHeader>
-        <CardContent>
-          <div className="text-red-500">{error}</div>
-        </CardContent>
-      </Card>
-    );
-  }
-
+export async function Leaderboard() {
+  const { data, source } = await getBenchmarkData();
+  
   // Sort by tokens per second (highest first)
   const sortedData = [...data].sort(
-    (a, b) => b.tokensPerSecond - a.tokensPerSecond
+    (a: BenchmarkEntry, b: BenchmarkEntry) => b.tokensPerSecond - a.tokensPerSecond
   );
+
+  const dataSource = source || "benchmark";
 
   return (
     <Card>
-      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-        <CardTitle>LLM Performance Benchmarks</CardTitle>
-        <div className="flex gap-2">
-          <Button
-            onClick={handleRefresh}
-            size="sm"
-            variant="outline"
-            disabled={refreshing}
-            className="gap-2"
-          >
-            <RefreshCw
-              className={`h-4 w-4 mr-2 ${refreshing ? "animate-spin" : ""}`}
-            />
-            {refreshing ? "Refreshing..." : "Refresh"}
-          </Button>
-          <Link href="/chat">
-            <Button size="sm" variant="outline" className="gap-2">
-              Go to Chat
-            </Button>
-          </Link>
-        </div>
-      </CardHeader>
+      <LeaderboardHeader />
       <CardContent>
         <div className="mb-4 text-sm text-muted-foreground">
           {dataSource === "cache" ? (
@@ -166,7 +74,7 @@ export function Leaderboard() {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {sortedData.map((entry) => (
+            {sortedData.map((entry: BenchmarkEntry) => (
               <TableRow key={entry.modelId}>
                 <TableCell className="font-medium">{entry.modelName}</TableCell>
                 <TableCell className="capitalize">{entry.provider}</TableCell>

@@ -1,7 +1,5 @@
 import { Leaderboard } from "@/components/leaderboard";
 import { Metadata } from "next";
-import { Button } from "@/components/ui/button";
-import Link from "next/link";
 
 export const metadata: Metadata = {
   title: "Benchmarks | AI SDK Gateway Demo",
