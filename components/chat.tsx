@@ -48,6 +48,11 @@ export function Chat({ modelId = DEFAULT_MODEL }: { modelId: string }) {
       }),
     });
 
+  function autoResizeTextarea(textarea: HTMLTextAreaElement) {
+    textarea.style.height = 'auto';
+    textarea.style.height = `${textarea.scrollHeight}px`;
+  }
+
   return (
     <div className="grid w-screen h-screen grid-rows-[auto_1fr_auto] max-w-[800px] m-auto">
       <div className="flex justify-between p-4 items-center">
@@ -118,44 +123,43 @@ export function Chat({ modelId = DEFAULT_MODEL }: { modelId: string }) {
         className="flex justify-center px-8 pt-0 pb-8"
       >
         <Card className="w-full p-0">
-          <CardContent className="flex flex-col md:flex-row md:items-center gap-3 p-2">
-            <div className="md:min-w-[280px]">
-              <ModelSelector
-                value={currentModelId}
-                onChange={handleModelIdChange}
-                models={models}
-                loading={isLoading}
-              />
-            </div>
-            <div className="flex flex-1 items-center">
-              <Input
-                name="prompt"
+          <CardContent className="flex flex-col gap-4 w-full">
+            <div className="w-full">
+              <textarea
+                onInput={(e) => autoResizeTextarea(e.target as HTMLTextAreaElement)}
+                rows={1}
                 placeholder="Type your message..."
-                onChange={handleInputChange}
+                className="w-full max-h-52 resize-none overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300 rounded-xl border border-gray-300 bg-muted/50 p-4 text-base leading-relaxed shadow-sm focus:border-black focus:outline-none focus:ring-0 transition-all duration-200"
                 value={input}
-                autoFocus
-                className="flex-1 border-0 focus-visible:ring-0 focus-visible:ring-offset-0 w-full md:w-[400px]"
-                onKeyDown={(e) => {
-                  if (e.metaKey && e.key === "Enter") {
-                    handleSubmit(e, { body: { modelId: currentModelId } });
-                  }
-                }}
+                onChange={handleInputChange}
               />
-              <Button
-                type="submit"
-                size="icon"
-                variant="ghost"
-                className="h-8 w-8 ml-1"
-              >
-                <SendIcon className="h-4 w-4" />
-              </Button>
             </div>
-            <BenchmarkButton
-              modelId={currentModelId}
-              onBenchmarkComplete={(result) => {
-                updateModelPerformance(result.modelId, result.tokensPerSecond);
-              }}
-            />
+            <div className="flex justify-between items-center">
+              <div className="md:min-w-[280px]">
+                <ModelSelector
+                  value={currentModelId}
+                  onChange={handleModelIdChange}
+                  models={models}
+                  loading={isLoading}
+                />
+              </div>
+              <div className="flex items-center gap-2">
+                <Button
+                  type="submit"
+                  size="icon"
+                  variant="ghost"
+                  className="h-8 w-8"
+                >
+                  <SendIcon className="h-4 w-4" />
+                </Button>
+                <BenchmarkButton
+                  modelId={currentModelId}
+                  onBenchmarkComplete={(result) => {
+                    updateModelPerformance(result.modelId, result.tokensPerSecond);
+                  }}
+                />
+              </div>
+            </div>
           </CardContent>
         </Card>
       </form>
