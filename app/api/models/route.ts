@@ -1,4 +1,4 @@
-import { gateway } from "@/lib/gateway";
+// import { gateway } from "@/lib/gateway";
 import { NextResponse } from "next/server";
 import { getAllBenchmarks } from "@/lib/benchmarks/benchmark-service";
 import { DisplayModel } from "@/lib/display-model";
@@ -15,22 +15,6 @@ const UNAVAILABLE_MODELS = new Set([
   "xai/grok-3-beta", // Simulate temporary unavailability
   "mistral/mistral-medium" // Simulate this being down
 ]);
-
-// This map helps match our internal model IDs to leaderboard model names
-const MODEL_MAPPING: Record<string, string> = {
-  "xai/grok-3-beta": "grok-3",
-  "xai/grok-3-fast-beta": "grok-3-fast",
-  "anthropic/claude-3-7-sonnet": "claude-3-sonnet",
-  "anthropic/claude-3-5-sonnet": "claude-3.5-sonnet", 
-  "groq/llama-3.1-70b-versatile": "llama-3-70b",
-  "groq/llama-3.1-8b-versatile": "llama-3-8b",
-  "google/gemini-2.0-flash-002": "gemini-2.0-flash",
-  "google/gemini-2.0-pro-002": "gemini-2.0-pro",
-  "openai/gpt-4o": "gpt-4o",
-  "openai/gpt-4o-mini": "gpt-4o-mini",
-  "mistral/mistral-large-2": "mistral-large-2",
-  "mistral/mistral-small": "mistral-small"
-};
 
 export async function GET() {
   try {

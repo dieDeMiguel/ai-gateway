@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getAllBenchmarks, runModelBenchmark } from '@/lib/benchmarks/benchmark-service';
-import { useAvailableModels } from '@/lib/hooks/use-available-models';
 
 // Simple in-memory cache to avoid too many benchmark runs
 const benchmarkCache = new Map<string, any>();

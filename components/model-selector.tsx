@@ -2,8 +2,7 @@
 
 import * as React from "react";
 import { CaretSortIcon, CheckIcon } from "@radix-ui/react-icons";
-import { ZapIcon, AlertTriangleIcon } from "lucide-react";
-import { useEffect, useState } from "react";
+import { ZapIcon } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -29,7 +28,7 @@ export type ModelSelectorProps = {
 };
 
 export function ModelSelector({ value, onChange, models, loading }: ModelSelectorProps) {
-  const [open, setOpen] = useState(false);
+  const [open, setOpen] = React.useState(false);
 
   const selectedModel = models.find((model) => model.id === value);
 

@@ -5,9 +5,8 @@ import { useRouter } from "next/navigation";
 import { ModelSelector } from "./model-selector";
 import { Card, CardContent } from "./ui/card";
 import { Button } from "./ui/button";
-import { Input } from "./ui/input";
 import { SendIcon } from "lucide-react";
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect } from "react";
 import { DEFAULT_MODEL } from "../lib/constants";
 import { Alert, AlertDescription } from "./ui/alert";
 import { AlertCircle } from "lucide-react";
@@ -20,7 +19,7 @@ import { BarChart2 } from "lucide-react";
 
 export function Chat({ modelId = DEFAULT_MODEL }: { modelId: string }) {
   const [currentModelId, setCurrentModelId] = useState(modelId);
-  const { models, isLoading, error: modelError, updateModelPerformance } = useAvailableModels();
+  const { models, isLoading, updateModelPerformance } = useAvailableModels();
   const [modelWarning, setModelWarning] = useState<string | null>(null);
   const router = useRouter();
 

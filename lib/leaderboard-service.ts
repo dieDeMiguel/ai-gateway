@@ -1,4 +1,4 @@
-import { DisplayModel } from './display-model';
+// import { DisplayModel } from './display-model';
 
 export interface LeaderboardEntry {
   model: string;

@@ -21,13 +21,11 @@ export function BenchmarkAllButton({
 }: BenchmarkAllButtonProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [progress, setProgress] = useState(0);
-  const [error, setError] = useState<string | null>(null);
 
   const runAllBenchmarks = async () => {
     if (!models.length) return;
     
     setIsLoading(true);
-    setError(null);
     setProgress(0);
     
     try {
