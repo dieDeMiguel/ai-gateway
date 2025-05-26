@@ -65,7 +65,6 @@ export function BenchmarkAllButton({
       }
     } catch (err) {
       console.error('Benchmark error:', err);
-      setError(err instanceof Error ? err.message : 'Failed to run benchmarks');
     } finally {
       setIsLoading(false);
       setProgress(100);
