@@ -1,8 +1,19 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getAllBenchmarks, runModelBenchmark } from '@/lib/benchmarks/benchmark-service';
 
+// Define a type for the benchmark cache values
+interface BenchmarkCacheValue {
+  modelId: string;
+  modelName: string;
+  provider: string;
+  tokensPerSecond: number;
+  timeToFirstToken: number;
+  totalTime: number;
+  timestamp: number;
+}
+
 // Simple in-memory cache to avoid too many benchmark runs
-const benchmarkCache = new Map<string, any>();
+const benchmarkCache = new Map<string, BenchmarkCacheValue>();
 let lastFetchTime = 0;
 const CACHE_TTL = 1000 * 60 * 5; // 5 minutes
 
@@ -24,7 +35,7 @@ export async function GET(req: NextRequest) {
     }
 
     const { models } = await modelsResponse.json();
-    const displayModels = models.map((model: any) => ({
+    const displayModels = models.map((model: { id: string; name: string; available: boolean; }) => ({
       id: model.id,
       label: model.name,
       isAvailable: model.available !== false,
@@ -36,7 +47,7 @@ export async function GET(req: NextRequest) {
     // Format the results
     const formattedResults = Array.from(benchmarkResults.entries()).map(
       ([modelId, result]) => {
-        const model = displayModels.find(m => m.id === modelId);
+        const model = displayModels.find((m: { id: string }) => m.id === modelId);
         return {
           modelId,
           modelName: model?.label || modelId,
@@ -51,7 +62,7 @@ export async function GET(req: NextRequest) {
 
     // Update cache
     formattedResults.forEach(result => {
-      benchmarkCache.set(result.modelId, result);
+      benchmarkCache.set(result.modelId, result as BenchmarkCacheValue);
     });
     lastFetchTime = now;
 

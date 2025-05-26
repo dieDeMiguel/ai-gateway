@@ -3,8 +3,25 @@ import { NextResponse } from "next/server";
 import { getAllBenchmarks } from "@/lib/benchmarks/benchmark-service";
 import { DisplayModel } from "@/lib/display-model";
 
-// Simple cache to avoid hitting the gateway too frequently
-let modelsCache: any = null;
+// Define a type for the models cache
+interface ModelsCache {
+  models: {
+    id: string;
+    name: string;
+    specification: {
+      specificationVersion: string;
+      provider: string;
+      modelId: string;
+    };
+    available: boolean;
+    tokensPerSecond?: number;
+    timeToFirstToken?: number;
+    totalTime?: number;
+  }[];
+}
+
+// Update the modelsCache type
+let modelsCache: ModelsCache | null = null;
 let lastFetchTime = 0;
 const CACHE_TTL = 1000 * 60 * 5; // 5 minutes
 

@@ -34,7 +34,7 @@ export function BenchmarkButton({
         throw new Error('No benchmark data available');
       }
       
-      const benchmarkResult = data.data.find((result: any) => result.modelId === modelId);
+      const benchmarkResult = data.data.find((result: BenchmarkResult) => result.modelId === modelId);
       if (!benchmarkResult) {
         throw new Error('Benchmark result for the model not found');
       }

@@ -44,7 +44,7 @@ export async function fetchLeaderboardData(): Promise<LeaderboardEntry[]> {
     // Process the data and extract relevant metrics
     // This is a simplified implementation that would need to be adjusted 
     // based on the actual API response structure
-    const entries: LeaderboardEntry[] = data.models.map((model: any, index: number) => ({
+    const entries: LeaderboardEntry[] = data.models.map((model: { name: string; throughput?: number; tokens_per_second?: number; }, index: number) => ({
       model: model.name,
       provider: extractProvider(model.name),
       tokensPerSecond: model.throughput || model.tokens_per_second,
